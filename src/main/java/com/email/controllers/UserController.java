@@ -1,50 +1,52 @@
 package com.email.controllers;
 
+import com.email.dto.UserCreateDto;
+import com.email.dto.UserResponseDto;
+import com.email.dto.UserUpdateDto;
 import com.email.models.User;
-import com.email.repositories.UserRepository;
 import com.email.services.UserService;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("users")
+@RequiredArgsConstructor
 public class UserController {
-    @Autowired
-    private UserRepository userRepository;
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
 
+    // get all
     @GetMapping
-    public List<User> list() {
-        return userRepository.findAll();
+    public List<UserResponseDto> list() {
+        return userService.findAll();
     }
 
+    //get by id
     @GetMapping("{id}")
-    public User get(@PathVariable Long id) {
-        return userRepository.getOne(id);
+    public UserResponseDto get(@PathVariable Long id) {
+        return userService.findById(id);
     }
 
     // create
     @PostMapping
-    public User create(@RequestBody final User user) {
+    @ResponseStatus(HttpStatus.CREATED)
+    public UserResponseDto create(@RequestBody final UserCreateDto user) {
         return userService.addUser(user);
     }
 
     // delete
     @DeleteMapping("{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete (@PathVariable Long id) {
-        userRepository.deleteById(id);
+        userService.deleteById(id);
     }
 
     // update
     @PutMapping("{id}")
-    public User update(@PathVariable Long id, @RequestBody User user) {
-        User existingSession = userRepository.getOne(id);
-        BeanUtils.copyProperties(user, existingSession, "user_id");
-        return userRepository.save(existingSession);
+    public UserUpdateDto update(@PathVariable Long id, @RequestBody User user) {
+        return userService.update(id, user);
     }
 }
